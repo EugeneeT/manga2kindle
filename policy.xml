@@ -1,0 +1,26 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE policymap [
+<!ELEMENT policymap (policy)+>
+<!ELEMENT policy (#PCDATA)>
+<!ATTLIST policy domain (delegate|coder|filter|path|resource) #REQUIRED>
+<!ATTLIST policy name CDATA #IMPLIED>
+<!ATTLIST policy rights (none|read|write|execute) #IMPLIED>
+<!ATTLIST policy pattern CDATA #IMPLIED>
+<!ATTLIST policy value CDATA #IMPLIED>
+]>
+<policymap>
+  <!-- Enable reading JPEG, PNG, WebP, and other common image formats -->
+  <policy domain="coder" rights="read|write" pattern="JPEG" />
+  <policy domain="coder" rights="read|write" pattern="PNG" />
+  <policy domain="coder" rights="read|write" pattern="WEBP" />
+  <policy domain="coder" rights="read|write" pattern="GIF" />
+  <policy domain="coder" rights="read|write" pattern="BMP" />
+  <policy domain="coder" rights="read|write" pattern="TIFF" />
+  
+  <!-- Configure memory and disk limits -->
+  <policy domain="resource" name="memory" value="256MiB"/>
+  <policy domain="resource" name="map" value="512MiB"/>
+  <policy domain="resource" name="width" value="16KP"/>
+  <policy domain="resource" name="height" value="16KP"/>
+  <policy domain="resource" name="disk" value="1GiB"/>
+</policymap>

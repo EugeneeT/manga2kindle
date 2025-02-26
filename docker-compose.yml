@@ -1,0 +1,25 @@
+version: '3.8'
+services:
+  app:
+    build: .
+    ports:
+      - "3000:3000"  # Node.js app
+      - "8384:8384"  # Syncthing Web UI
+    volumes:
+      - manga_sync:/sync:rw    # Syncthing data - managed by Docker
+      - app_data:/app/data:rw  # App settings and config - managed by Docker
+    environment:
+      - JWT_SECRET=${JWT_SECRET}
+      - NODE_ENV=production
+      - SMTP_HOST=${SMTP_HOST}
+      - SMTP_PORT=${SMTP_PORT}
+      - SMTP_USER=${SMTP_USER}
+      - SMTP_PASS=${SMTP_PASS}
+      - KINDLE_EMAIL=${KINDLE_EMAIL}
+      - DATA_DIR=/app/data
+      - ST_HOME=/app/data/syncthing
+    restart: unless-stopped
+
+volumes:
+  manga_sync:  # Docker-managed volume for synced files
+  app_data:    # Docker-managed volume for app data and settings
