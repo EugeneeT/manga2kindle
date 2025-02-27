@@ -33,11 +33,12 @@ const Button = memo(
 
     // Get variant-specific classes
     const variantClasses = {
-      [VARIANTS.PRIMARY]:
-        "bg-blue-500 hover:bg-blue-600 text-white dark:bg-blue-600 dark:hover:bg-blue-700",
-      [VARIANTS.SECONDARY]: "bg-gray-300 hover:bg-gray-400 text-gray-800",
-      [VARIANTS.DANGER]: "bg-red-500 hover:bg-red-600 text-white",
-      [VARIANTS.SUCCESS]: "bg-green-500 hover:bg-green-600 text-white",
+      [VARIANTS.PRIMARY]: "text-white dark:bg-blue-600 dark:hover:bg-blue-700",
+      [VARIANTS.SECONDARY]:
+        "text-gray-800 dark:bg-gray-300 dark:hover:bg-gray-400",
+      [VARIANTS.DANGER]: "text-white dark:bg-red-500 dark:hover:bg-red-600 ",
+      [VARIANTS.SUCCESS]:
+        "text-white dark:bg-green-500 dark:hover:bg-green-600",
     }[variant];
 
     // Combine all classes

@@ -11,12 +11,12 @@ const Card = memo(
   ({ children, title, titleAction, className = "", bodyClassName = "" }) => {
     return (
       <div
-        className={` dark:bg-gray-800 rounded-lg shadow p-4 dark:text-white ${className}`}
+        className={`bg-gray-800 rounded-lg shadow p-4 text-white ${className}`}
       >
         {(title || titleAction) && (
           <div className="flex justify-between items-center mb-4">
             {title && (
-              <h2 className="text-lg font-semibold dark:text-white">{title}</h2>
+              <h2 className="text-lg font-semibold text-white">{title}</h2>
             )}
             {titleAction}
           </div>

@@ -19,21 +19,19 @@ const FILE_STATUS = {
 const FileItem = memo(({ file }) => {
   const statusColors =
     file.status === FILE_STATUS.ERROR
-      ? "bg-red-100 dark:bg-red-900 dark:bg-opacity-20"
-      : "bg-green-100 dark:bg-green-900 dark:bg-opacity-20";
+      ? "bg-red-900 bg-opacity-20"
+      : "bg-green-900 bg-opacity-20";
 
   return (
     <div className={`p-3 rounded ${statusColors}`}>
       <div className="flex justify-between">
         <div>
-          <span className="font-medium text-gray-900 dark:text-white">
+          <span className="font-medium text-white">
             {file.seriesName || "Unknown Series"}
           </span>
-          <span className="text-gray-600 dark:text-gray-400 ml-2">
-            ({file.name})
-          </span>
+          <span className="text-gray-400 ml-2">({file.name})</span>
         </div>
-        <span className="text-sm text-gray-600 dark:text-gray-400 whitespace-nowrap">
+        <span className="text-sm text-gray-400 whitespace-nowrap">
           {new Date(file.processedAt).toLocaleString()}
         </span>
       </div>
@@ -59,25 +57,21 @@ const HistorySection = memo(({ files = [], onClearHistory }) => {
   return (
     <Card className="mt-6">
       <div className="flex justify-between items-center mb-4">
-        <h2 className="text-lg font-semibold text-gray-900 dark:text-white">
-          Processing History
-        </h2>
+        <h2 className="text-lg font-semibold text-white">Processing History</h2>
         {files.length > 0 && (
           <Button onClick={onClearHistory} icon={<Trash2 size={16} />} />
         )}
       </div>
 
       {files.length === 0 ? (
-        <p className="text-gray-600 dark:text-gray-400">
-          No processing history yet.
-        </p>
+        <p className="text-gray-400">No processing history yet.</p>
       ) : (
         <div>
-          <span className="text-sm text-gray-600 dark:text-gray-400 mb-4 block">
+          <span className="text-sm text-gray-400 mb-4 block">
             {files.length} {files.length === 1 ? "item" : "items"} in history
           </span>
 
-          <div className="space-y-2 h-80 overflow-y-auto pr-2 dark:scrollbar-thumb-gray-700 scrollbar-thumb-gray-300 scrollbar-track-transparent">
+          <div className="space-y-2 h-80 overflow-y-auto pr-2 scrollbar-thumb-gray-700 scrollbar-thumb-gray-300 scrollbar-track-transparent">
             {files.map((file, index) => (
               <FileItem key={`file-${index}`} file={file} />
             ))}

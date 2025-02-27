@@ -1,5 +1,5 @@
 # Build stage for frontend
-FROM node:18-alpine AS frontend-builder
+FROM node:23-alpine AS frontend-builder
 WORKDIR /app
 COPY src/frontend/package*.json ./
 RUN npm install
@@ -7,14 +7,14 @@ COPY src/frontend ./
 RUN npm run build
 
 # Build stage for backend
-FROM node:18-alpine AS backend-builder
+FROM node:23-alpine AS backend-builder
 WORKDIR /app
 COPY package*.json ./
 RUN npm install --production
 COPY . .
 
 # Final stage
-FROM node:18-alpine AS runtime
+FROM node:23-alpine AS runtime
 RUN apk add --no-cache \
     imagemagick \
     ghostscript \
@@ -51,6 +51,6 @@ RUN chmod +x /entrypoint.sh
 
 USER node
 
-EXPOSE 3000 8384
+EXPOSE 32023 8384
 
 ENTRYPOINT ["/entrypoint.sh"]

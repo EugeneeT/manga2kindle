@@ -47,14 +47,14 @@ const Input = memo(
     return (
       <div className={className}>
         {label && (
-          <label className="block text-sm m- dark:text-gray-300">{label}</label>
+          <label className="block text-sm text-gray-300">{label}</label>
         )}
         <input
           type={type}
           value={value}
           onChange={id ? handleObjectChange : handleChange}
           onKeyDown={onKeyDown}
-          className="border p-2 w-full rounded dark:bg-gray-700 dark:border-gray-600 dark:text-white"
+          className="border p-2 w-full rounded bg-gray-700 border-gray-600 text-white"
           required={required}
           disabled={disabled}
           placeholder={placeholder}

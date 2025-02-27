@@ -9,56 +9,90 @@ const createKindleService = (config) => {
   let transporter = null;
   let currentConfig = { ...config };
 
-  const validateConfiguration = async (settings) => {
-    const { smtpUser, smtpPass, kindleEmail } = settings;
+  const validateConfiguration = async (settings, strictValidation = false) => {
+    const { smtpHost, smtpPort, smtpUser, smtpPass, kindleEmail } = settings;
 
-    if (!smtpUser || !smtpPass || !kindleEmail) {
-      throw new AppError(
-        "Missing required email configuration",
-        "ConfigError",
-        400
-      );
+    // If we're strictly validating (e.g., before sending email)
+    if (strictValidation) {
+      if (!smtpHost || !smtpPort || !smtpUser || !smtpPass || !kindleEmail) {
+        throw new AppError(
+          "Missing required email configuration",
+          "ConfigError",
+          400
+        );
+      }
+    } else {
+      // For settings updates, we'll be more lenient
+      // Just store what we have and validate at send time
+      if (!smtpHost && !smtpPort && !smtpUser && !smtpPass && !kindleEmail) {
+        // If all are empty, just update the config without validation
+        currentConfig = {
+          ...currentConfig,
+          smtpHost: smtpHost || currentConfig.smtpHost,
+          smtpPort: smtpPort || currentConfig.smtpPort,
+          smtpUser: smtpUser || currentConfig.smtpUser,
+          smtpPass: smtpPass || currentConfig.smtpPass,
+          kindleEmail: kindleEmail || currentConfig.kindleEmail,
+        };
+        return true;
+      }
     }
 
     // Update current configuration
     currentConfig = {
       ...currentConfig,
-      smtpUser,
-      smtpPass,
-      kindleEmail,
+      smtpHost: smtpHost || currentConfig.smtpHost,
+      smtpPort: smtpPort || currentConfig.smtpPort,
+      smtpUser: smtpUser || currentConfig.smtpUser,
+      smtpPass: smtpPass || currentConfig.smtpPass,
+      kindleEmail: kindleEmail || currentConfig.kindleEmail,
     };
 
-    // Test connection
-    const testTransporter = nodemailer.createTransport({
-      host: currentConfig.smtpHost,
-      port: currentConfig.smtpPort,
-      secure: currentConfig.smtpPort === 465,
-      auth: {
-        user: smtpUser,
-        pass: smtpPass,
-      },
-    });
+    // Only test connection if we have all required fields
+    if (smtpHost && smtpPort && smtpUser && smtpPass && kindleEmail) {
+      // Test connection
+      const testTransporter = nodemailer.createTransport({
+        host: smtpHost,
+        port: parseInt(smtpPort),
+        secure: parseInt(smtpPort) === 465, // Usually 465 for secure, not 587
+        auth: {
+          user: smtpUser,
+          pass: smtpPass,
+        },
+      });
 
-    try {
-      await testTransporter.verify();
-      transporter = testTransporter;
-      return true;
-    } catch (error) {
-      throw new AppError(
-        `Failed to validate email configuration: ${error.message}`,
-        "ConfigError",
-        400
-      );
+      try {
+        await testTransporter.verify();
+        transporter = testTransporter;
+        return true;
+      } catch (error) {
+        if (strictValidation) {
+          throw new AppError(
+            `Failed to validate email configuration: ${error.message}`,
+            "ConfigError",
+            400
+          );
+        }
+        // When not strict, just log the error but don't throw
+        console.warn(`Email configuration warning: ${error.message}`);
+        return false;
+      }
     }
+
+    return false;
   };
 
   const initializeTransporter = async () => {
     if (
+      currentConfig.smtpHost &&
+      currentConfig.smtpPort &&
       currentConfig.smtpUser &&
       currentConfig.smtpPass &&
       currentConfig.kindleEmail
     ) {
       await validateConfiguration({
+        smtpHost: currentConfig.smtpHost,
+        smtpPort: currentConfig.smtpPort,
         smtpUser: currentConfig.smtpUser,
         smtpPass: currentConfig.smtpPass,
         kindleEmail: currentConfig.kindleEmail,
@@ -72,8 +106,26 @@ const createKindleService = (config) => {
   };
 
   const sendToKindle = async (filePath) => {
+    // Strict validation when actually trying to send
     if (!transporter) {
-      throw new AppError("Email transport not configured", "ConfigError", 400);
+      await validateConfiguration(
+        {
+          smtpHost: currentConfig.smtpHost,
+          smtpPort: currentConfig.smtpPort,
+          smtpUser: currentConfig.smtpUser,
+          smtpPass: currentConfig.smtpPass,
+          kindleEmail: currentConfig.kindleEmail,
+        },
+        true
+      ); // Pass true for strict validation
+
+      if (!transporter) {
+        throw new AppError(
+          "Email transport not configured",
+          "ConfigError",
+          400
+        );
+      }
     }
 
     try {

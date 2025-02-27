@@ -28,7 +28,7 @@ const StatusIndicator = memo(({ status }) => {
   return (
     <div className="flex items-center gap-4">
       <div className={`w-4 h-4 rounded-full ${statusColor}`} />
-      <span className="text-gray-700 dark:text-white">{statusText}</span>
+      <span className="text-white">{statusText}</span>
     </div>
   );
 });
@@ -55,8 +55,7 @@ const IntervalEditor = memo(
   }) => {
     const handleKeyDown = (e) => {
       if (e.key === "Enter") {
-        onIntervalSave();
-        setIsEditingInterval(false);
+        handleSave();
       }
     };
 
@@ -79,13 +78,13 @@ const IntervalEditor = memo(
           onKeyDown={handleKeyDown}
           className="w-14"
         />
-        <Button onClick={handleSave} className="px-3 py-2 text-sm">
+        <Button onClick={handleSave} className="text-sm">
           <Save size={16} />
         </Button>
         <Button
           onClick={handleCancel}
-          variant={VARIANTS.SECONDARY}
-          className="px-3 py-2 text-sm"
+          variant={VARIANTS.DANGER}
+          className="text-sm"
         >
           <X size={16} />
         </Button>
@@ -107,9 +106,7 @@ IntervalEditor.propTypes = {
  */
 const IntervalDisplay = memo(({ config, setIsEditingInterval }) => (
   <div className="flex items-center gap-2">
-    <span className="text-gray-700 dark:text-white">
-      {config.checkInterval} min
-    </span>
+    <span className="text-white">{config.checkInterval} min</span>
     <div className="ml-auto">
       <Button
         onClick={() => setIsEditingInterval(true)}
@@ -157,12 +154,8 @@ const StatusSection = memo(
 
       <div className="mt-4 flex justify-between items-center">
         <div className="flex items-center gap-2">
-          <span className="text-sm text-gray-700 dark:text-gray-300">
-            Check Interval:
-          </span>
-          <span className="text-gray-700 dark:text-white">
-            {config.checkInterval} min
-          </span>
+          <span className="text-sm text-gray-300">Check Interval:</span>
+          <span className="text-white">{config.checkInterval} min</span>
         </div>
 
         {isEditingInterval ? (

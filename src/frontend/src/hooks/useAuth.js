@@ -39,7 +39,7 @@ export const useAuth = () => {
    */
   const createSession = useCallback(() => {
     return {
-      expiry: new Date(Date.now() + SESSION_EXPIRY_TIME).toISOString()
+      expiry: new Date(Date.now() + SESSION_EXPIRY_TIME).toISOString(),
     };
   }, []);
 
@@ -52,106 +52,164 @@ export const useAuth = () => {
   }, []);
 
   /**
+   * Verify token validity with the server
+   * @returns {Promise<boolean>} Token validity
+   */
+  const verifyTokenWithServer = useCallback(async () => {
+    try {
+      const token = localStorage.getItem("token");
+
+      if (!token) {
+        return false;
+      }
+
+      // Use the token refresh endpoint to verify if the token is valid
+      const response = await fetch("/api/auth/refresh", {
+        method: "POST",
+        headers: {
+          Authorization: `Bearer ${token}`,
+          "Content-Type": "application/json",
+        },
+      });
+
+      if (!response.ok) {
+        throw new Error("Invalid token");
+      }
+
+      // If we got here, token is valid, update it with the new one
+      const data = await response.json();
+      localStorage.setItem("token", data.token);
+      localStorage.setItem("session", JSON.stringify(createSession()));
+
+      return true;
+    } catch (error) {
+      console.error("Token verification failed:", error);
+      clearStoredAuth();
+      return false;
+    }
+  }, [clearStoredAuth, createSession]);
+
+  /**
    * Check authentication status from server or local storage
    * @returns {Promise<boolean>} Authentication status
    */
   const checkAuthStatus = useCallback(async () => {
     try {
+      // First, check if the system is initialized at all
+      const statusResponse = await fetch("/api/auth/status");
+
+      if (!statusResponse.ok) {
+        throw new Error("Failed to get auth status");
+      }
+
+      const statusData = await statusResponse.json();
+
+      // If system is not initialized, clear any existing tokens and return
+      if (!statusData.isInitialized) {
+        clearStoredAuth();
+        setAuthState((prev) => ({
+          ...prev,
+          isInitialized: false,
+          isAuthenticated: false,
+        }));
+        return false;
+      }
+
+      // System is initialized, now check if we have a valid token
       const token = localStorage.getItem("token");
       const session = localStorage.getItem("session");
 
-      // If we have valid local auth data, use it
+      // If we have a token and session, check if session is valid locally first
       if (token && session && isSessionValid(session)) {
-        setAuthState(prev => ({
+        // Then verify with the server that the token is still valid
+        const isValid = await verifyTokenWithServer();
+
+        setAuthState((prev) => ({
           ...prev,
-          isAuthenticated: true,
           isInitialized: true,
+          isAuthenticated: isValid,
         }));
-        return true;
-      }
 
-      // Otherwise check with the server
-      const response = await fetch("/api/auth/status");
-      
-      if (!response.ok) {
-        throw new Error("Failed to get auth status");
-      }
-      
-      const data = await response.json();
-
-      if (!data.isAuthenticated) {
+        return isValid;
+      } else {
+        // No valid token or session, clear any existing ones
         clearStoredAuth();
+        setAuthState((prev) => ({
+          ...prev,
+          isInitialized: true,
+          isAuthenticated: false,
+        }));
+        return false;
       }
-
-      setAuthState(prev => ({
-        ...prev,
-        isInitialized: data.isInitialized,
-        isAuthenticated: data.isAuthenticated,
-      }));
-
-      return data.isAuthenticated;
     } catch (error) {
       console.error("Failed to check auth status:", error);
-      setAuthState(prev => ({
+      clearStoredAuth();
+      setAuthState((prev) => ({
         ...prev,
         isAuthenticated: false,
       }));
       return false;
     }
-  }, [clearStoredAuth, isSessionValid]);
+  }, [clearStoredAuth, isSessionValid, verifyTokenWithServer]);
 
   /**
    * Handle user login
    * @param {Object} credentials - User credentials
    * @returns {Promise<boolean>} Login success status
    */
-  const handleLogin = useCallback(async (credentials) => {
-    try {
-      const response = await fetch("/api/auth/login", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(credentials),
-      });
+  const handleLogin = useCallback(
+    async (credentials) => {
+      try {
+        // Clear any existing auth data before attempting login
+        clearStoredAuth();
 
-      if (!response.ok) {
-        throw new Error("Invalid credentials");
+        const response = await fetch("/api/auth/login", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(credentials),
+        });
+
+        if (!response.ok) {
+          throw new Error("Invalid credentials");
+        }
+
+        const data = await response.json();
+
+        if (!data.token) {
+          throw new Error("No token received");
+        }
+
+        // Store auth data
+        localStorage.setItem("token", data.token);
+        localStorage.setItem("session", JSON.stringify(createSession()));
+
+        // Update state
+        setAuthState((prev) => ({
+          ...prev,
+          isAuthenticated: true,
+          loginAttempts: 0,
+          loginError: "",
+        }));
+
+        return true;
+      } catch (error) {
+        setAuthState((prev) => ({
+          ...prev,
+          loginAttempts: prev.loginAttempts + 1,
+          loginError: error.message || "Invalid credentials",
+        }));
+        return false;
       }
-
-      const data = await response.json();
-      
-      if (!data.token) {
-        throw new Error("No token received");
-      }
-      
-      // Store auth data
-      localStorage.setItem("token", data.token);
-      localStorage.setItem("session", JSON.stringify(createSession()));
-
-      // Update state
-      setAuthState(prev => ({
-        ...prev,
-        isAuthenticated: true,
-        loginAttempts: 0,
-        loginError: "",
-      }));
-
-      return true;
-    } catch (error) {
-      setAuthState(prev => ({
-        ...prev,
-        loginAttempts: prev.loginAttempts + 1,
-        loginError: error.message || "Invalid credentials",
-      }));
-      return false;
-    }
-  }, [createSession]);
+    },
+    [clearStoredAuth, createSession]
+  );
 
   /**
    * Handle user logout
    */
   const handleLogout = useCallback(() => {
     clearStoredAuth();
-    setAuthState(prev => ({
+    setAuthState((prev) => ({
       ...prev,
       isAuthenticated: false,
       loginError: "",

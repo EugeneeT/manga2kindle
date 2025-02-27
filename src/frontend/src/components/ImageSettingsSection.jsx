@@ -30,7 +30,7 @@ const DEFAULT_PRESET_TEMPLATE = {
  */
 const Header = memo(({ showImageSettings, toggleImageSettings }) => (
   <div className="flex justify-between items-center mb-4">
-    <h2 className="text-lg font-semibold text-gray-900 dark:text-white">
+    <h2 className="text-lg font-semibold text-white">
       Image Processing Settings
     </h2>
     <Button
@@ -62,12 +62,8 @@ ErrorMessage.propTypes = {
  */
 const ActivePresetDisplay = memo(({ activePreset }) => (
   <div className="flex items-center mb-4">
-    <label className="mr-2 text-gray-700 dark:text-gray-300">
-      Active Preset:
-    </label>
-    <div className="font-medium text-gray-900 dark:text-white">
-      {activePreset || "Default"}
-    </div>
+    <label className="mr-2 text-gray-300">Active Preset:</label>
+    <div className="font-medium  text-white">{activePreset || "Default"}</div>
   </div>
 ));
 
@@ -85,7 +81,7 @@ const PresetItem = memo(
       <div className="flex space-x-2">
         <Button
           onClick={() => onEdit(presetName)}
-          className="text-blue-500 hover:text-blue-700 p-1"
+          className=" p-1"
           title="Edit preset"
           icon={<Edit size={16} />}
           variant={VARIANTS.SECONDARY}
@@ -93,7 +89,7 @@ const PresetItem = memo(
         {!isActive && (
           <Button
             onClick={() => onDelete(presetName)}
-            className="text-red-500 hover:text-red-700 p-1"
+            className="p-1"
             title="Delete preset"
             disabled={loading}
             icon={<Trash size={16} />}
@@ -128,13 +124,11 @@ const PresetSelector = memo(
   }) => (
     <div className="space-y-4">
       <div className="flex items-center space-x-4">
-        <label className="text-sm text-gray-700 dark:text-gray-300">
-          Active Preset:
-        </label>
+        <label className="text-sm text-gray-300">Active Preset:</label>
         <select
           value={activePreset}
           onChange={(e) => onPresetChange(e.target.value)}
-          className="border p-2 rounded bg-white text-gray-900 dark:bg-gray-700 dark:border-gray-600 dark:text-white"
+          className="border p-2 rounded bg-gray-700 border-gray-600 text-white"
         >
           {Object.keys(presets).map((presetName) => (
             <option key={presetName} value={presetName}>
@@ -145,7 +139,7 @@ const PresetSelector = memo(
       </div>
 
       <div className="mt-4">
-        <h3 className="text-md font-semibold mb-2 text-gray-900 dark:text-white">
+        <h3 className="text-md font-semibold mb-2 text-white">
           Available Presets
         </h3>
         <div className="space-y-2">
@@ -197,7 +191,7 @@ const ContrastAdjustment = memo(({ editedPreset, toggleFeature }) => (
         onChange={() => toggleFeature("contrast.enabled")}
       />
     </div>
-    <p className="text-xs text-gray-500 dark:text-gray-400">
+    <p className="text-xs text-gray-400">
       Applies standard contrast enhancement to improve image clarity
     </p>
   </div>
@@ -395,7 +389,7 @@ const PresetEditor = memo(
     return (
       <div className="space-y-4">
         <div className="flex justify-between items-center">
-          <h3 className="text-md font-semibold text-gray-900 dark:text-white">
+          <h3 className="text-md font-semibold text-white">
             {isCreatingPreset
               ? "Create New Preset"
               : `Edit Preset: ${editingPreset}`}
@@ -405,7 +399,7 @@ const PresetEditor = memo(
           <div className="flex space-x-2">
             <Button
               onClick={onCancelEdit}
-              variant={VARIANTS.SECONDARY}
+              variant={VARIANTS.DANGER}
               icon={<X size={16} />}
             ></Button>
             <Button
@@ -453,7 +447,7 @@ const PresetEditor = memo(
         <SettingGroup title="Color Adjustments">
           <div className="mb-4">
             <div className="flex items-center justify-between">
-              <label className="block text-sm mb-1 text-gray-700 dark:text-gray-300">
+              <label className="block text-sm mb-1 text-gray-300">
                 Color Space Conversion
               </label>
               <SettingToggle
@@ -466,7 +460,7 @@ const PresetEditor = memo(
                 }
               />
             </div>
-            <p className="text-xs text-gray-500 dark:text-gray-400">
+            <p className="text-xs text-gray-400">
               Converts CMYK to sRGB for better web compatibility
             </p>
           </div>

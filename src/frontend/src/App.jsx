@@ -14,13 +14,11 @@ import { useImageSettings } from "./hooks/useImageSettings";
 // Common AppHeader component used in both authenticated and non-authenticated states
 const AppHeader = ({ showLogout = false, onLogout = null }) => (
   <div className="flex justify-between items-center mb-6">
-    <h1 className="text-2xl font-bold text-gray-900 dark:text-white">
-      Manga to Kindle Converter
-    </h1>
+    <h1 className="text-2xl font-bold text-white">Manga to Kindle Converter</h1>
     {showLogout && (
       <button
         onClick={onLogout}
-        className="bg-blue-500 hover:bg-blue-600 text-white px-4 py-2 rounded dark:bg-blue-600 dark:hover:bg-blue-700"
+        className="text-white px-4 py-2 rounded bg-blue-600 hover:bg-blue-700"
       >
         Logout
       </button>
@@ -151,6 +149,7 @@ const App = () => {
           })
         );
 
+        await handleLogin(credentials);
         // Use state management via React instead of page reload
         await loadInitialData();
       } catch (error) {
@@ -162,7 +161,7 @@ const App = () => {
         setIsLoading((prev) => ({ ...prev, auth: false }));
       }
     },
-    [credentials, loadInitialData]
+    [credentials, loadInitialData, handleLogin]
   );
 
   // Settings handlers
@@ -317,7 +316,7 @@ const App = () => {
           {/* Status Section */}
           <StatusSection
             status={status}
-            isProcessing={isLoading.processing}
+            isProcessing={status.isProcessing || isLoading.processing}
             onStartProcessing={handleStartProcessing}
             config={config}
             localInterval={localInterval}

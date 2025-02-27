@@ -3,7 +3,7 @@ import jwt from "jsonwebtoken";
 import userModel from "../models/userModel.js";
 import { AppError } from "../middleware/errorHandler.js";
 
-const JWT_SECRET = process.env.JWT_SECRET;
+const JWT_SECRET = process.env.JWT_SECRET || "weaksecret1234567890";
 if (!JWT_SECRET) {
   throw new Error("JWT_SECRET environment variable is required");
 }
@@ -12,6 +12,7 @@ const TOKEN_EXPIRY = "24h";
 
 const createAuthService = () => {
   const generateToken = (username) => {
+    console.log(JWT_SECRET);
     return jwt.sign({ username }, JWT_SECRET, { expiresIn: TOKEN_EXPIRY });
   };
 

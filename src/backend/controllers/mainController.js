@@ -25,8 +25,14 @@ const createMainController = (
 
   // Load initial history
   const initialize = async () => {
-    currentStatus.processedFiles = await historyService.getHistory();
-    await scheduleCron();
+    try {
+      const history = await historyService.getHistory();
+      currentStatus.processedFiles = Array.isArray(history) ? history : [];
+      await scheduleCron();
+    } catch (error) {
+      console.error("Error loading history:", error);
+      currentStatus.processedFiles = [];
+    }
   };
 
   const updateStatus = async (update) => {
@@ -39,6 +45,9 @@ const createMainController = (
     if (update.processedFiles?.length > 0) {
       const lastEntry = update.processedFiles[0];
       await historyService.addToHistory(lastEntry);
+
+      // Make sure to update the current status with the full history
+      currentStatus.processedFiles = await historyService.getHistory();
     }
   };
 

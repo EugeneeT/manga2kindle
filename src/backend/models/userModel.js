@@ -3,7 +3,7 @@ import bcrypt from "bcrypt";
 import fs from "fs/promises";
 import path from "path";
 
-const DATA_DIR = process.env.DATA_DIR || "/data";
+const DATA_DIR = process.env.DATA_DIR || "/app/data";
 const USER_FILE = path.join(DATA_DIR, "user.json");
 
 const userModel = {

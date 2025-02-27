@@ -7,6 +7,8 @@ import { useState, useEffect, useCallback } from "react";
 const DEFAULT_CHECK_INTERVAL = 30;
 const DEFAULT_CONFIG = {
   checkInterval: DEFAULT_CHECK_INTERVAL,
+  smtpHost: "smtp.gmail.com",
+  smtpPort: 587,
   smtpUser: "",
   smtpPass: "",
   kindleEmail: "",
@@ -30,10 +32,10 @@ export const useSettings = (isAuthenticated) => {
 
   // Actual configuration
   const [config, setConfig] = useState(DEFAULT_CONFIG);
-  
+
   // Temporary configuration used for editing
   const [tempConfig, setTempConfig] = useState(DEFAULT_CONFIG);
-  
+
   // Local interval value as string for input
   const [localInterval, setLocalInterval] = useState(
     DEFAULT_CHECK_INTERVAL.toString()
@@ -67,9 +69,9 @@ export const useSettings = (isAuthenticated) => {
    */
   const loadInitialData = useCallback(async () => {
     if (!isAuthenticated) return;
-    
-    setSettingsState(prev => ({ ...prev, isLoading: true, error: null }));
-    
+
+    setSettingsState((prev) => ({ ...prev, isLoading: true, error: null }));
+
     try {
       const response = await fetch("/api/settings", {
         headers: getAuthHeaders(),
@@ -86,20 +88,20 @@ export const useSettings = (isAuthenticated) => {
       setConfig(normalizedSettings);
       setTempConfig(normalizedSettings);
       setLocalInterval(normalizedSettings.checkInterval.toString());
-      
-      setSettingsState(prev => ({ 
-        ...prev, 
+
+      setSettingsState((prev) => ({
+        ...prev,
         isLoading: false,
         settingsChanged: false,
       }));
-      
+
       return normalizedSettings;
     } catch (error) {
       console.error("Error loading settings:", error);
-      setSettingsState(prev => ({ 
-        ...prev, 
-        isLoading: false, 
-        error: error.message 
+      setSettingsState((prev) => ({
+        ...prev,
+        isLoading: false,
+        error: error.message,
       }));
       return null;
     }
@@ -111,8 +113,8 @@ export const useSettings = (isAuthenticated) => {
    * @param {any} value - New value
    */
   const handleTempConfigChange = useCallback((field, value) => {
-    setTempConfig(prev => ({ ...prev, [field]: value }));
-    setSettingsState(prev => ({ ...prev, settingsChanged: true }));
+    setTempConfig((prev) => ({ ...prev, [field]: value }));
+    setSettingsState((prev) => ({ ...prev, settingsChanged: true }));
   }, []);
 
   /**
@@ -120,8 +122,8 @@ export const useSettings = (isAuthenticated) => {
    * @returns {Promise<boolean>} Success status
    */
   const handleSettingsSave = useCallback(async () => {
-    setSettingsState(prev => ({ ...prev, isLoading: true, error: null }));
-    
+    setSettingsState((prev) => ({ ...prev, isLoading: true, error: null }));
+
     try {
       // Prepare config with parsed interval
       const updatedConfig = {
@@ -136,7 +138,7 @@ export const useSettings = (isAuthenticated) => {
       });
 
       const data = await response.json();
-      
+
       if (!response.ok) {
         throw new Error(data.error || "Failed to save settings");
       }
@@ -146,31 +148,86 @@ export const useSettings = (isAuthenticated) => {
       if (!settings) {
         throw new Error("No settings returned from server");
       }
-      
+
       const normalizedSettings = normalizeSettings(settings);
-      
+
       setConfig(normalizedSettings);
       setTempConfig(normalizedSettings);
       setLocalInterval(normalizedSettings.checkInterval.toString());
-      
-      setSettingsState(prev => ({ 
-        ...prev, 
-        isLoading: false, 
+
+      setSettingsState((prev) => ({
+        ...prev,
+        isLoading: false,
         settingsChanged: false,
         error: null,
       }));
-      
+
       return true;
     } catch (error) {
       console.error("Error saving settings:", error);
-      setSettingsState(prev => ({ 
-        ...prev, 
-        isLoading: false, 
+      setSettingsState((prev) => ({
+        ...prev,
+        isLoading: false,
         error: error.message,
       }));
       return false;
     }
   }, [tempConfig, localInterval, getAuthHeaders, normalizeSettings]);
+
+  /**
+   * Save only the interval setting to the server
+   * @returns {Promise<boolean>} Success status
+   */
+  const saveIntervalOnly = useCallback(async () => {
+    setSettingsState((prev) => ({ ...prev, isLoading: true, error: null }));
+
+    try {
+      // Parse interval value
+      const checkInterval = parseInt(localInterval) || DEFAULT_CHECK_INTERVAL;
+
+      // Only send the interval to update
+      const response = await fetch("/api/settings", {
+        method: "POST",
+        headers: getAuthHeaders(),
+        body: JSON.stringify({ checkInterval }),
+      });
+
+      const data = await response.json();
+
+      if (!response.ok) {
+        throw new Error(data.error || "Failed to save interval setting");
+      }
+
+      // Update state with new settings
+      const { settings } = data;
+      if (!settings) {
+        throw new Error("No settings returned from server");
+      }
+
+      const normalizedSettings = normalizeSettings(settings);
+
+      setConfig(normalizedSettings);
+      setTempConfig(normalizedSettings);
+      setLocalInterval(normalizedSettings.checkInterval.toString());
+
+      setSettingsState((prev) => ({
+        ...prev,
+        isLoading: false,
+        settingsChanged: false,
+        error: null,
+      }));
+
+      return true;
+    } catch (error) {
+      console.error("Error saving interval:", error);
+      setSettingsState((prev) => ({
+        ...prev,
+        isLoading: false,
+        error: error.message,
+      }));
+      return false;
+    }
+  }, [localInterval, getAuthHeaders, normalizeSettings]);
 
   // Load settings when authentication changes
   useEffect(() => {
@@ -189,5 +246,6 @@ export const useSettings = (isAuthenticated) => {
     loadInitialData,
     handleTempConfigChange,
     handleSettingsSave,
+    saveIntervalOnly,
   };
 };

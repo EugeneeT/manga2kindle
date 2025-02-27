@@ -42,9 +42,12 @@ const createServer = async () => {
 
   // Configure CORS
   const corsOptions = {
+    // Determine the allowed origin based on NODE_ENV and PORT
     origin:
       process.env.NODE_ENV === "production"
-        ? ["http://localhost:3000", process.env.ALLOWED_ORIGIN || ""]
+        ? process.env.ALLOWED_ORIGINS
+          ? process.env.ALLOWED_ORIGINS.split(",")
+          : `http://localhost:${process.env.PORT || 32023}` // Fallback to 32023
         : "*",
     methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
     allowedHeaders: ["Content-Type", "Authorization"],
@@ -68,21 +71,15 @@ const createServer = async () => {
 
   const localFileService = createLocalFileService();
   const conversionService = createConversionService(
-    "/data",
+    process.env.DATA_DIR || "./data",
     imageSettingsService
   );
 
   // Get settings for Kindle service
   const settings = await settingsService.getSettings();
-  const kindleService = createKindleService({
-    smtpHost: process.env.SMTP_HOST,
-    smtpPort: parseInt(process.env.SMTP_PORT) || 587,
-    smtpUser: settings.smtpUser || process.env.SMTP_USER,
-    smtpPass: settings.smtpPass || process.env.SMTP_PASS,
-    kindleEmail: settings.kindleEmail || process.env.KINDLE_EMAIL,
-  });
+  const kindleService = createKindleService(settings);
 
-  const historyService = createHistoryService(settingsService);
+  const historyService = createHistoryService();
 
   // Initialize controllers
   const settingsController = createSettingsController(
@@ -131,7 +128,7 @@ const createServer = async () => {
 const startServer = async () => {
   try {
     const app = await createServer();
-    const PORT = process.env.PORT || 3000;
+    const PORT = process.env.PORT || 32023;
 
     app.listen(PORT, () => {
       console.log(`Server running on port ${PORT}`);

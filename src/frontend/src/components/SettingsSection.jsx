@@ -65,6 +65,19 @@ const EmailSettingsForm = memo(
   }) => (
     <div className="space-y-4">
       <Input
+        type="text"
+        label="SMTP Host"
+        value={tempConfig.smtpHost}
+        onChange={(value) => onTempConfigChange("smtpHost", value)}
+      />
+
+      <Input
+        type="number"
+        label="SMTP Port"
+        value={tempConfig.smtpPort}
+        onChange={(value) => onTempConfigChange("smtpPort", value)}
+      />
+      <Input
         type="email"
         label="SMTP User"
         value={tempConfig.smtpUser}
@@ -72,7 +85,7 @@ const EmailSettingsForm = memo(
       />
 
       <div>
-        <label className="block text-sm mb-1 text-gray-700 dark:text-gray-300">
+        <label className="block text-sm mb-1 text-gray-300">
           SMTP Password
         </label>
         <div className="relative flex items-center">
@@ -80,7 +93,7 @@ const EmailSettingsForm = memo(
             type={showPassword ? "text" : "password"}
             value={tempConfig.smtpPass}
             onChange={(e) => onTempConfigChange("smtpPass", e.target.value)}
-            className="border p-2 w-full rounded bg-white text-gray-900 dark:bg-gray-700 dark:border-gray-600 dark:text-white"
+            className="border p-2 w-full rounded bg-gray-700 border-gray-600 text-white"
           />
           <Button
             onClick={() => setShowPassword(!showPassword)}
@@ -150,7 +163,7 @@ const PasswordChangeForm = memo(
 
         <form onSubmit={onPasswordChange} className="space-y-4">
           <div>
-            <label className="block text-sm mb-1 text-gray-700 dark:text-gray-300">
+            <label className="block text-sm mb-1 text-gray-300">
               Current Password
             </label>
             <div className="relative flex items-center">
@@ -163,7 +176,7 @@ const PasswordChangeForm = memo(
                     oldPassword: e.target.value,
                   }))
                 }
-                className="border p-2 w-full rounded bg-white text-gray-900 dark:bg-gray-700 dark:border-gray-600 dark:text-white"
+                className="border p-2 w-full rounded bg-gray-700 border-gray-600 text-white"
                 required
               />
               <Button
@@ -177,7 +190,7 @@ const PasswordChangeForm = memo(
           </div>
 
           <div>
-            <label className="block text-sm mb-1 text-gray-700 dark:text-gray-300">
+            <label className="block text-sm mb-1 text-gray-300">
               New Password
             </label>
             <div className="relative flex items-center">
@@ -190,7 +203,7 @@ const PasswordChangeForm = memo(
                     newPassword: e.target.value,
                   }))
                 }
-                className="border p-2 w-full rounded bg-white text-gray-900 dark:bg-gray-700 dark:border-gray-600 dark:text-white"
+                className="border p-2 w-full rounded bg-gray-700 border-gray-600 text-white"
                 required
               />
               <Button
@@ -204,7 +217,7 @@ const PasswordChangeForm = memo(
           </div>
 
           <div>
-            <label className="block text-sm mb-1 text-gray-700 dark:text-gray-300">
+            <label className="block text-sm mb-1 text-gray-300">
               Confirm New Password
             </label>
             <div className="relative flex items-center">
@@ -217,7 +230,7 @@ const PasswordChangeForm = memo(
                     confirmPassword: e.target.value,
                   }))
                 }
-                className="border p-2 w-full rounded bg-white text-gray-900 dark:bg-gray-700 dark:border-gray-600 dark:text-white"
+                className="border p-2 w-full rounded bg-gray-700 border-gray-600 text-white"
                 required
               />
               <Button
